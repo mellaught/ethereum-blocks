@@ -13,7 +13,7 @@ import (
 
 func main() {
 	cfg := config.NewViperConfig()
-	srvConfig := cfg.ReadServiceConfig()
+	srvConfig, explorerConfig := cfg.ReadServiceConfig(), cfg.ReadExplorerConfig()
 	// init logrus logger
 	logger := logrus.New()
 	logger.SetFormatter(&logrus.TextFormatter{
@@ -40,7 +40,7 @@ func main() {
 		cancel()
 	}()
 
-	app := app.NewApp(logger)
+	app := app.NewApp(logger, explorerConfig.URL)
 	//run App
 	app.Run(ctx, srvConfig.Host+":"+srvConfig.Port)
 	logger.Infoln("Ethereum block scanner service has started on :%s\nPress ctrl + C to exit.", srvConfig.Port)

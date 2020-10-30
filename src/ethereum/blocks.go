@@ -29,7 +29,7 @@ func CreateNewBlocksTxsStorage(logger *logrus.Logger, cli *ethclient.Client, URL
 		logger: logger,
 	}
 	// run subs
-	blocskStore.subscribeBlocks(cli)
+	go blocskStore.subscribeBlocks(cli)
 
 	return blocskStore
 }

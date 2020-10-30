@@ -6,7 +6,7 @@
     },
     "logger-level": "debug",
     "infura": {
-        "url": "https://ropsten.infura.io",
-        "ws-url": "wss://ropsten.infura.io/ws"
+        "ws-url": "https://ropsten.infura.io",
+        "url": "wss://ropsten.infura.io/ws"
     }
 }

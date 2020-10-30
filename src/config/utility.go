@@ -11,3 +11,10 @@ func (v *viperConfig) ReadServiceConfig() *models.ServiceConfig {
 		Port: v.GetString("service.port"),
 	}
 }
+
+// Reads explorer params from config.json
+func (v *viperConfig) ReadExplorerConfig() *models.EthereumExplorer {
+	return &models.EthereumExplorer{
+		URL: v.GetString("infura.url"),
+	}
+}

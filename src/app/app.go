@@ -20,13 +20,13 @@ type App struct {
 }
 
 // NewApp is initializes the app.
-func NewApp(logger *logrus.Logger) *App {
+func NewApp(logger *logrus.Logger, explorerURL string) *App {
 	// create new app
 	a := &App{
 		logger: logger,
 		router: mux.NewRouter(),
 		Server: &http.Server{},
-		ethSRV: eth.CreateNewEthereumSRV(logger, ""),
+		ethSRV: eth.CreateNewEthereumSRV(logger, explorerURL),
 	}
 	// set router && create ethereum service
 	a.router = mux.NewRouter()

@@ -13,6 +13,7 @@ import (
 // Config ...
 type Config interface {
 	ReadServiceConfig() *models.ServiceConfig
+	ReadExplorerConfig() *models.EthereumExplorer
 	GetString(key string) string
 	GetInt(key string) int
 	GetBool(key string) bool
