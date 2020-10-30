@@ -52,20 +52,23 @@ func (a *App) setRouters() {
 
 // Run the app on it's router
 func (a *App) Run(ctx context.Context, url string) {
-	<-ctx.Done()
-
 	a.Server.Addr = url
-
-	ctxShutDown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	if err := a.Server.Shutdown(ctxShutDown); err != nil {
-		a.logger.Fatalf("Shutdown: %v\n", err)
-	}
 
 	go func() {
 		if err := a.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			a.logger.Fatal(err)
 		}
 	}()
+	a.logger.Infof("Ethereum block scanner service has started on %s\nPress ctrl + C to exit.", url)
+
+	<-ctx.Done()
+
+	a.logger.Infoln("Ethereum block scanner service has stopped")
+
+	ctxShutDown, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	if err := a.Server.Shutdown(ctxShutDown); err != nil {
+		a.logger.Fatalf("Shutdown: %v\n", err)
+	}
 }

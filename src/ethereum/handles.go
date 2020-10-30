@@ -34,7 +34,7 @@ func (e *EthereumSRV) BlocksHandle(w http.ResponseWriter, r *http.Request) {
 		start, err := strconv.ParseUint(inputRange[0], 10, 64)
 		if err != nil {
 			e.logger.WithFields(logrus.Fields{"function": "BlocksHandle()", "Start": inputRange[0]}).
-				Errorln("While parse uint", err)
+				Errorln("While parse uint ", err)
 			common.ResponError(w, http.StatusBadRequest, fmt.Sprintf("While parse range :%s", err.Error()))
 			return
 		}
@@ -42,18 +42,19 @@ func (e *EthereumSRV) BlocksHandle(w http.ResponseWriter, r *http.Request) {
 		end, err := strconv.ParseUint(inputRange[1], 10, 64)
 		if err != nil {
 			e.logger.WithFields(logrus.Fields{"function": "BlocksHandle()", "End": inputRange[0]}).
-				Errorln("While parse uint", err)
+				Errorln("While parse uint ", err)
 			common.ResponError(w, http.StatusBadRequest, fmt.Sprintf("While parse range :%s", err.Error()))
 			return
 		}
 
 		blocks, err := e.blocks.GetBlocksByRange(start, end)
 		if err != nil {
-			e.logger.WithFields(logrus.Fields{"function": "BlocksHandle()", "End": inputRange[0]}).
-				Errorln("While parse uint", err)
-			common.ResponError(w, http.StatusBadRequest, fmt.Sprintf("While parse range :%s", err.Error()))
+			e.logger.WithFields(logrus.Fields{"function": "BlocksHandle()",
+				"Range": fmt.Sprintf("%d-%d", start, end)}).Errorln("While get blocks by range ", err)
+			common.ResponError(w, http.StatusBadRequest, err.Error())
 			return
 		}
+
 		common.ResponJSON(w, http.StatusOK, blocks)
 		return
 	}

@@ -8,13 +8,14 @@ import (
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/mellaught/ethereum-blocks/src/models"
 	"github.com/sirupsen/logrus"
 )
 
 // Blocks ...
 type BlocksTxsStorage struct {
 	sync.RWMutex
-	blocks []*types.Block // array(size == 100) of last 100 blocks
+	blocks []*types.Block // slice of last 100 blocks
 	txs    map[string]*types.Transaction
 	logger *logrus.Logger // logger
 }
@@ -24,7 +25,7 @@ type BlocksTxsStorage struct {
 // Output:
 func CreateNewBlocksTxsStorage(logger *logrus.Logger, cli *ethclient.Client, URL string) *BlocksTxsStorage {
 	blocskStore := &BlocksTxsStorage{
-		blocks: make([]*types.Block, 100),
+		blocks: []*types.Block{},
 		txs:    make(map[string]*types.Transaction),
 		logger: logger,
 	}
@@ -57,7 +58,7 @@ func (b *BlocksTxsStorage) subscribeBlocks(cli *ethclient.Client) {
 
 			b.Lock()
 			// delete the first blocks(oldest) and it's transactions
-			if len(b.blocks) == 100 {
+			if len(b.blocks) == 10 {
 				fmt.Println("HERE")
 				oldBlock := b.blocks[0]
 				b.blocks = b.blocks[1:]
@@ -72,8 +73,9 @@ func (b *BlocksTxsStorage) subscribeBlocks(cli *ethclient.Client) {
 			}
 			b.Unlock()
 
+			createNewBlock(block)
+
 			b.logger.WithFields(logrus.Fields{
-				"function":    "SubscribeBlocks()",
 				"blockHash":   block.Hash().Hex(),
 				"blockNumber": block.Number().Uint64(),
 				"txs count":   len(block.Transactions()),
@@ -85,15 +87,15 @@ func (b *BlocksTxsStorage) subscribeBlocks(cli *ethclient.Client) {
 // GetBlocksByTransactionID returns block contains transaction
 // Input: hash of tranasction
 // Output: block contains transaction with request hash. If success -> block, else -> nil
-func (b *BlocksTxsStorage) GetBlockByTransactionID(id string) *types.Block {
+func (b *BlocksTxsStorage) GetBlockByTransactionID(id string) *models.Block {
 	b.Lock()
 	blocks := b.blocks
 	b.Unlock()
 
-	for _, bl := range blocks {
-		for _, tx := range bl.Transactions() {
+	for _, blk := range blocks {
+		for _, tx := range blk.Transactions() {
 			if tx.Hash().Hex() == id {
-				return bl
+				return createNewBlock(blk)
 			}
 		}
 	}
@@ -104,7 +106,7 @@ func (b *BlocksTxsStorage) GetBlockByTransactionID(id string) *types.Block {
 // GetBlocksByRange returns blocks from range
 // Input: start block number, end block number of searching range
 // Output: blocks and error. If success -> (blocks, nil), else -> (nil, error)
-func (b *BlocksTxsStorage) GetBlocksByRange(start, end uint64) (rangeBlocks []*types.Block, err error) {
+func (b *BlocksTxsStorage) GetBlocksByRange(start, end uint64) (rangeBlocks []*models.Block, err error) {
 	b.Lock()
 	blocks := b.blocks
 	b.Unlock()
@@ -116,7 +118,40 @@ func (b *BlocksTxsStorage) GetBlocksByRange(start, end uint64) (rangeBlocks []*t
 			return nil, fmt.Errorf("Searching range (%d,%d) out of last 100 blocks range (%d,%d) ", start, end, firstBlkNumber, lastBlkNumber)
 		}
 
+		for _, blk := range blocks {
+			if blk.Number().Uint64() >= start && blk.Number().Uint64() <= end {
+				rangeBlocks = append(rangeBlocks, createNewBlock(blk))
+			}
+		}
+
+		return rangeBlocks, nil
 	}
 
 	return nil, fmt.Errorf("Please wait. Haven't got blocks yet")
+}
+
+func createNewBlock(ethBlock *types.Block) *models.Block {
+	// get header && txs lenght
+	block := &models.Block{
+		Number:     ethBlock.Number().Uint64(),
+		ParentHash: ethBlock.ParentHash().Hex(),
+		Difficulty: ethBlock.Difficulty().String(),
+		TxCount:    ethBlock.Transactions().Len(),
+		Timestamp:  ethBlock.Time(),
+	}
+
+	// get txs
+	txs := ethBlock.Transactions()
+	for _, tx := range txs {
+		tx := models.Transaction{
+			Hash:  tx.Hash().Hex(),
+			To:    tx.To().Hex(),
+			Value: tx.Value().String(),
+			Nonce: tx.Nonce(),
+		}
+
+		block.Txs = append(block.Txs, &tx)
+	}
+
+	return block
 }

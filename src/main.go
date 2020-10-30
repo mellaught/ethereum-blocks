@@ -36,12 +36,11 @@ func main() {
 
 	go func() {
 		sign := <-c
-		logger.Infoln("System signal: %v", sign)
+		logger.Infof("System signal: %+v\n", sign)
 		cancel()
 	}()
 
 	app := app.NewApp(logger, explorerConfig.URL)
 	//run App
 	app.Run(ctx, srvConfig.Host+":"+srvConfig.Port)
-	logger.Infoln("Ethereum block scanner service has started on :%s\nPress ctrl + C to exit.", srvConfig.Port)
 }
