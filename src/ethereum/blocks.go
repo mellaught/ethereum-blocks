@@ -130,6 +130,7 @@ func (b *BlocksTxsStorage) GetBlocksByRange(start, end uint64) (rangeBlocks []*m
 	return nil, fmt.Errorf("Please wait. Haven't got blocks yet")
 }
 
+// createNewBlock creates json response
 func createNewBlock(ethBlock *types.Block) *models.Block {
 	// get header && txs lenght
 	block := &models.Block{

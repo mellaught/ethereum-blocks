@@ -13,8 +13,8 @@ type EthereumSRV struct {
 }
 
 // CreateNewEthereumSRV creates new ethereum block service
-// Input:
-// Output:
+// Input: logger, ethereum explorer(or node) url
+// Output: ethereum service
 func CreateNewEthereumSRV(logger *logrus.Logger, URL string) *EthereumSRV {
 	client, err := ethclient.Dial(URL)
 	if err != nil {

@@ -14,8 +14,6 @@ import (
 )
 
 // BlocksHandle ...
-// Input:
-// Output:
 func (e *EthereumSRV) BlocksHandle(w http.ResponseWriter, r *http.Request) {
 	request := mux.Vars(r)["input"]
 	e.logger.WithField("Request", request).Infoln("BlocksHandle()")
