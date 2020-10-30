@@ -58,8 +58,7 @@ func (b *BlocksTxsStorage) subscribeBlocks(cli *ethclient.Client) {
 
 			b.Lock()
 			// delete the first blocks(oldest) and it's transactions
-			if len(b.blocks) == 10 {
-				fmt.Println("HERE")
+			if len(b.blocks) == 100 {
 				oldBlock := b.blocks[0]
 				b.blocks = b.blocks[1:]
 				for _, tx := range oldBlock.Transactions() {
@@ -145,7 +144,7 @@ func createNewBlock(ethBlock *types.Block) *models.Block {
 	for _, tx := range txs {
 		tx := models.Transaction{
 			Hash:  tx.Hash().Hex(),
-			To:    tx.To().Hex(),
+			To:    tx.To().String(),
 			Value: tx.Value().String(),
 			Nonce: tx.Nonce(),
 		}
