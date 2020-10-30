@@ -72,8 +72,6 @@ func (b *BlocksTxsStorage) subscribeBlocks(cli *ethclient.Client) {
 			}
 			b.Unlock()
 
-			createNewBlock(block)
-
 			b.logger.WithFields(logrus.Fields{
 				"blockHash":   block.Hash().Hex(),
 				"blockNumber": block.Number().Uint64(),
@@ -141,12 +139,15 @@ func createNewBlock(ethBlock *types.Block) *models.Block {
 
 	// get txs
 	txs := ethBlock.Transactions()
-	for _, tx := range txs {
+	for _, ethTx := range txs {
 		tx := models.Transaction{
-			Hash:  tx.Hash().Hex(),
-			To:    tx.To().String(),
-			Value: tx.Value().String(),
-			Nonce: tx.Nonce(),
+			Hash:  ethTx.Hash().Hex(),
+			Value: ethTx.Value().String(),
+			Nonce: ethTx.Nonce(),
+		}
+
+		if ethTx.To() != nil {
+			tx.To = ethTx.To().Hex()
 		}
 
 		block.Txs = append(block.Txs, &tx)
